@@ -48,19 +48,25 @@ public class CafeServiceImpl implements CafeService {
     @Override
     public Optional<CafeCompletoDTO> atualizarPorId(String id, CafeCompletoDTO dto) {
         Optional<Cafe> cafe = repositorio.findById(id);
-
+    
         if (cafe.isPresent()){
-
-            Cafe cafeAtualizar = new Cafe(dto);
-            cafeAtualizar.getId();
+            Cafe cafeAtualizar = cafe.get();
+            
+            cafeAtualizar.setNomeCafe(dto.nomeCafe());
+            cafeAtualizar.setIngredientes(dto.ingredientes());
+            cafeAtualizar.setTamanho(dto.tamanho());
+            cafeAtualizar.setValor(dto.valor());
+            
             repositorio.save(cafeAtualizar);
-            return Optional.of(new CafeCompletoDTO(cafeAtualizar.getId(),cafeAtualizar.getNomeCafe(),
-                                    cafeAtualizar.getIngredientes(),cafeAtualizar.getTamanho()
-                                    ,cafeAtualizar.getValor()));
+            
+            return Optional.of(new CafeCompletoDTO(cafeAtualizar.getId(),
+                cafeAtualizar.getNomeCafe(), cafeAtualizar.getIngredientes(),
+                cafeAtualizar.getTamanho(), cafeAtualizar.getValor()));
         }
-            return Optional.empty();
-
+        
+        return Optional.empty();
     }
+    
 
     @Override
     public void excluirPorId(String id) {
