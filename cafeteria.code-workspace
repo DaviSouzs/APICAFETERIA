@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "cafeteria"
+		},
+		{
+			"name": "discovery-server",
+			"path": "discovery-server"
+		},
+		{
+			"name": "gateway",
+			"path": "gateway"
+		}
+	],
+	"settings": {}
+}
