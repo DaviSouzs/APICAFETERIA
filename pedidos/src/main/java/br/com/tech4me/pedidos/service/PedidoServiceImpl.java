@@ -11,6 +11,8 @@ import br.com.tech4me.pedidos.shared.PedidoCompletoDTO;
 import br.com.tech4me.pedidos.shared.PedidoDTO;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import br.com.tech4me.pedidos.httpClient.CafeteriaClient;
+import br.com.tech4me.pedidos.model.Cafe;
+import br.com.tech4me.pedidos.model.Pedido;
 
 @Service
 public class PedidoServiceImpl implements PedidoService {
@@ -49,8 +51,18 @@ CafeteriaClient cliente;
 
     @Override
     public void excluirPorId(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'excluirPorId'");
+        repositorio.deleteById(id);
     }
-    
+
+    public Optional<PedidoDTO> fallbackObterPorId(String id, Exception e) {
+    Optional<Pedido> pedido = repositorio.findById(id);
+
+    if (pedido.isPresent()) {
+        // Caso o micro serviço café cair, ele vai criar um café vazio para trazer informações
+        Cafe cafe = new Cafe();
+        return Optional.of(PedidoDTO.fromPedido(pedido.get(), cafe));
+    }
+    return Optional.empty();
+}
+
 }
