@@ -11,5 +11,5 @@ import br.com.tech4me.pedidos.model.Cafe;
 public interface CafeteriaClient {
     
     @RequestMapping(method = RequestMethod.GET, value = "/cafeteria/{id}")
-    Cafe obterPizzaPorId(@PathVariable String id);
+    Cafe obterCafePorId(@PathVariable String id);
 }

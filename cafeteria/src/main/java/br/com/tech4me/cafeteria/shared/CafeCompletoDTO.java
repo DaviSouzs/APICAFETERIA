@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record CafeCompletoDTO (String id, @NotEmpty (message = "Esse campo deve ser preenchido")
+public record CafeCompletoDTO (@NotEmpty (message = "Esse campo deve ser preenchido") String id, 
                                 @NotBlank (message = "Esse campo está em branco, favor verificar")
                                 String nomeCafe, 
                                 List<String> ingredientes,

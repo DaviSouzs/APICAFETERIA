@@ -7,8 +7,8 @@ import br.com.tech4me.pedidos.shared.PedidoCompletoDTO;
 import br.com.tech4me.pedidos.shared.PedidoDTO;
 
 public interface PedidoService {
-    List<PedidoCompletoDTO> obterTodos();
-    Optional<PedidoDTO> obterPorId(String id);
+    List<PedidoDTO> obterPedidos();
+    Optional<PedidoCompletoDTO> obterPorId(String id);
     PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidos);
     Optional<PedidoCompletoDTO> atualizarPorId(String id);
     void excluirPorId(String id);
