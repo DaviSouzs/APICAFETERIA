@@ -10,6 +10,6 @@ public interface PedidoService {
     List<PedidoDTO> obterPedidos();
     Optional<PedidoCompletoDTO> obterPorId(String id);
     PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidos);
-    Optional<PedidoCompletoDTO> atualizarPorId(String id);
+    Optional<PedidoCompletoDTO> atualizarPorId(String id, PedidoCompletoDTO dto);
     void excluirPorId(String id);
 }

@@ -76,9 +76,26 @@ CafeteriaClient cliente;
 }
 
     @Override
-    public Optional<PedidoCompletoDTO> atualizarPorId(String id) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'atualizarPorId'");
-    }
+    public Optional<PedidoCompletoDTO> atualizarPorId(String id, PedidoCompletoDTO dto) {
+    Optional<Pedido> pedido = repositorio.findById(id);
 
+
+    if (pedido.isPresent()) {
+        Cafe cafe = cliente.obterCafePorId(dto.idCafe());
+        Pedido pedidoAtualizar = pedido.get();
+        pedidoAtualizar.setIdCafe(dto.idCafe());
+        pedidoAtualizar.setNomeCliente(dto.nomeCliente());
+        pedidoAtualizar.setTamanho(dto.tamanho());
+        pedidoAtualizar.setNomeCafe(cafe.getNomeCafe());
+        pedidoAtualizar.setIngredientes(cafe.getIngredientes());
+        pedidoAtualizar.setValor(cafe.getValor());
+        
+
+        Pedido pedidoAtualizado = repositorio.save(pedidoAtualizar);
+
+        PedidoCompletoDTO pedidoAtualizadoDTO = PedidoCompletoDTO.fromPedido(pedidoAtualizado);
+        return Optional.of(pedidoAtualizadoDTO);
+    }
+    return Optional.empty();
+}
 }

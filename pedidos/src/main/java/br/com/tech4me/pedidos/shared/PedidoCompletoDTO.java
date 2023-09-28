@@ -1,6 +1,7 @@
 package br.com.tech4me.pedidos.shared;
 import br.com.tech4me.pedidos.model.Pedido;
 import br.com.tech4me.pedidos.model.Tamanho;
+import br.com.tech4me.pedidos.model.Cafe;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
