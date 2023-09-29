@@ -5,11 +5,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import br.com.tech4me.pedidos.model.Cafe;
+import br.com.tech4me.pedidos.shared.CafeDTO;
 
 @FeignClient("cafeteria")
 public interface CafeteriaClient {
     
     @RequestMapping(method = RequestMethod.GET, value = "/cafeteria/{id}")
-    Cafe obterCafePorId(@PathVariable String id);
+    CafeDTO obterCafePorId(@PathVariable String id);
 }

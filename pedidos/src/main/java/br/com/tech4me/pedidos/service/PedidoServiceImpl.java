@@ -6,12 +6,11 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-
+import br.com.tech4me.pedidos.shared.CafeDTO;
 import br.com.tech4me.pedidos.shared.PedidoCompletoDTO;
 import br.com.tech4me.pedidos.shared.PedidoDTO;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import br.com.tech4me.pedidos.httpClient.CafeteriaClient;
-import br.com.tech4me.pedidos.model.Cafe;
 import br.com.tech4me.pedidos.model.Pedido;
 import br.com.tech4me.pedidos.repository.PedidoRepository;
 
@@ -25,39 +24,67 @@ CafeteriaClient cliente;
 
     @Override
     public List<PedidoDTO> obterPedidos() {
-        return repositorio.findAll().stream()
-        .map(p -> PedidoDTO.fromPedido(p))
-        .toList();
+        return repositorio.findAll()
+                .stream()
+                .map(PedidoDTO::fromPedido) //Aqui chama o método criado no PedidoDTO
+                .toList();
     }
+    
 
     @CircuitBreaker(name = "obterCafePorId", fallbackMethod = "fallbackObterPorId")
 
-    @Override
-    public Optional<PedidoCompletoDTO> obterPorId(String id) {
-        Optional<Pedido> pedido = repositorio.findById(id);
-        
-        if (pedido.isPresent()){
-            PedidoCompletoDTO pedidoDTO = PedidoCompletoDTO.fromPedido(pedido.get());
-           return Optional.of(pedidoDTO);
-        }
-        return Optional.empty();
+@Override
+public Optional<PedidoCompletoDTO> obterPorId(String id) {
+    Optional<Pedido> novoPedido = repositorio.findById(id);
+    
+
+    if (novoPedido.isPresent()) {
+        // Pego as informações do Pedido e crio uma variável idCafe para usar no feign
+        Pedido pedido = novoPedido.get();
+        String idCafe = pedido.getIdCafe();
+
+        // Aqui o feign busca as informações com base no idCafe
+        CafeDTO cafeDTO = cliente.obterCafePorId(idCafe);
+
+        // Feita a associação do Pedido com o CafeDTO
+        PedidoCompletoDTO pedidoCompletoDTO = new PedidoCompletoDTO(
+            pedido.getId(),
+            pedido.getNomeCliente(),
+            cafeDTO,
+            idCafe
+        );
+
+        return Optional.of(pedidoCompletoDTO);
     }
 
-    @Override
-    public PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidoDTO) {
-        Cafe cafe = cliente.obterCafePorId(pedidoDTO.idCafe());
+    return Optional.empty();
+}
 
-        Pedido pedido = new Pedido();
-        pedido.setNomeCliente(pedidoDTO.nomeCliente());
-        pedido.setIdCafe(pedidoDTO.idCafe());
-        pedido.setValor(cafe.getValor());
-        pedido.setIngredientes(cafe.getIngredientes());
-        pedido.setNomeCafe(cafe.getNomeCafe());
-        pedido.setTamanho(cafe.getTamanho());
-        pedido = repositorio.save(pedido);
-        PedidoCompletoDTO pedidoCompletoDTO = PedidoCompletoDTO.fromPedido(pedido);
 
-            return pedidoCompletoDTO;
+@Override
+
+public PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidoDTO) {
+    Pedido pedido = new Pedido();
+    pedido.setNomeCliente(pedidoDTO.nomeCliente());
+    String idCafe = pedidoDTO.idCafe();
+    
+    // Pego as informações do café pelo feing com o ID 
+    CafeDTO cafeDTO = cliente.obterCafePorId(idCafe);
+    
+    // Aqui é associado as informações do Café que pegou no feing, 
+    // passa pelo CafeDTO e vai para o pedido
+    pedido.setIdCafe(idCafe);
+    pedido = repositorio.save(pedido);
+    
+    // Aqui cria o pedidoCompletoDTO com base no CafeDTO e PedidoDTO
+    PedidoCompletoDTO pedidoCompletoDTO = new PedidoCompletoDTO(
+        pedido.getId(),
+        pedido.getNomeCliente(),
+        cafeDTO,
+        idCafe
+    );
+    
+    return pedidoCompletoDTO;
 }
 
     @Override
@@ -65,37 +92,50 @@ CafeteriaClient cliente;
         repositorio.deleteById(id);
     }
 
-    public Optional<PedidoDTO> fallbackObterPorId(String id, Exception e) {
-    Optional<Pedido> pedido = repositorio.findById(id);
-
-    if (pedido.isPresent()) {
-        // Caso o micro serviço café cair, ele vai criar um café vazio para trazer informações
-        return Optional.of(PedidoDTO.fromPedido(pedido.get()));
+    public Optional<PedidoCompletoDTO> fallbackObterPorId(String id, Exception e) {
+        Optional<Pedido> pedido = repositorio.findById(id);
+    
+        if (pedido.isPresent()) {
+            // Retorne as informações disponíveis em Pedido como PedidoCompletoDTO
+            Pedido pedidoExistente = pedido.get();
+            return Optional.of(new PedidoCompletoDTO(pedidoExistente));
+        }
+    
+        // Se não houver informações em Pedido, retorne Optional.empty()
+        return Optional.empty();
     }
-    return Optional.empty();
-}
+    
+    
 
     @Override
-    public Optional<PedidoCompletoDTO> atualizarPorId(String id, PedidoCompletoDTO dto) {
+  public Optional<PedidoCompletoDTO> atualizarPorId(String id, PedidoCompletoDTO dto) {
     Optional<Pedido> pedido = repositorio.findById(id);
 
-
     if (pedido.isPresent()) {
-        Cafe cafe = cliente.obterCafePorId(dto.idCafe());
         Pedido pedidoAtualizar = pedido.get();
-        pedidoAtualizar.setIdCafe(dto.idCafe());
+        CafeDTO cafeDTO = cliente.obterCafePorId(dto.idCafe());
+
         pedidoAtualizar.setNomeCliente(dto.nomeCliente());
-        pedidoAtualizar.setTamanho(dto.tamanho());
-        pedidoAtualizar.setNomeCafe(cafe.getNomeCafe());
-        pedidoAtualizar.setIngredientes(cafe.getIngredientes());
-        pedidoAtualizar.setValor(cafe.getValor());
-        
+        pedidoAtualizar.setIdCafe(dto.idCafe());
+
+       //Aqui é atualizado o pedido do Café com base no DTO
+        pedidoAtualizar.getCafe().setValor(cafeDTO.valor());
+        pedidoAtualizar.getCafe().setIngredientes(cafeDTO.ingredientes());
+        pedidoAtualizar.getCafe().setNomeCafe(cafeDTO.nomeCafe());
+        pedidoAtualizar.getCafe().setTamanho(cafeDTO.tamanho());
+    
 
         Pedido pedidoAtualizado = repositorio.save(pedidoAtualizar);
 
-        PedidoCompletoDTO pedidoAtualizadoDTO = PedidoCompletoDTO.fromPedido(pedidoAtualizado);
-        return Optional.of(pedidoAtualizadoDTO);
+        // Retorno de tudo que foi feito. 
+        return Optional.of(new PedidoCompletoDTO(
+            pedidoAtualizado.getId(),
+            pedidoAtualizado.getNomeCliente(),
+            new CafeDTO(pedidoAtualizado.getCafe()),
+            pedidoAtualizado.getIdCafe()
+        ));
     }
+
     return Optional.empty();
 }
 }

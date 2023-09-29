@@ -1,12 +1,14 @@
 package br.com.tech4me.pedidos.shared;
+
+
 import br.com.tech4me.pedidos.model.Pedido;
-import br.com.tech4me.pedidos.model.Tamanho;
 
-
-
-public record PedidoDTO (String id, String nomeCliente, String nomeCafe, Tamanho tamanho){
+public record PedidoDTO(String id, String nomeCliente) {
+    
     public static PedidoDTO fromPedido(Pedido pedido) {
-        return new PedidoDTO(pedido.getId(), pedido.getNomeCliente(), 
-        pedido.getNomeCafe(),pedido.getTamanho());
-}
+        return new PedidoDTO(
+            pedido.getId(),
+            pedido.getNomeCliente()
+        );
+    }
 }
