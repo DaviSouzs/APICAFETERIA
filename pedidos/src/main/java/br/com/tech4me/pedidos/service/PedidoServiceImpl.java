@@ -131,8 +131,7 @@ public PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidoDTO) {
         return Optional.of(new PedidoCompletoDTO(
             pedidoAtualizado.getId(),
             pedidoAtualizado.getNomeCliente(),
-            new CafeDTO(pedidoAtualizado.getCafe()),
-            pedidoAtualizado.getIdCafe()
+            cafeDTO,cafeDTO.id()
         ));
     }
 
