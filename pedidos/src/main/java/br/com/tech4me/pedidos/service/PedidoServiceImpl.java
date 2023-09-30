@@ -31,7 +31,7 @@ CafeteriaClient cliente;
     }
     
 
-    @CircuitBreaker(name = "obterCafePorId", fallbackMethod = "fallbackObterPorId")
+ @CircuitBreaker(name = "obterCafePorId", fallbackMethod = "fallbackObterPorId")
 
 @Override
 public Optional<PedidoCompletoDTO> obterPorId(String id) {
@@ -96,13 +96,12 @@ public PedidoCompletoDTO cadastrarPedido(PedidoCompletoDTO pedidoDTO) {
         Optional<Pedido> pedido = repositorio.findById(id);
     
         if (pedido.isPresent()) {
-            // Retorne as informações disponíveis em Pedido como PedidoCompletoDTO
+           //Retornando as informações disponíveis em Pedido como PedidoCompletoDTO
             Pedido pedidoExistente = pedido.get();
             return Optional.of(new PedidoCompletoDTO(pedidoExistente));
-        }
+       }
     
-        // Se não houver informações em Pedido, retorne Optional.empty()
-        return Optional.empty();
+       return Optional.empty();
     }
     
     
