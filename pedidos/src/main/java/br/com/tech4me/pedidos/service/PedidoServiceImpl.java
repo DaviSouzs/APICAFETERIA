@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import br.com.tech4me.pedidos.shared.CafeDTO;
@@ -15,6 +16,7 @@ import br.com.tech4me.pedidos.model.Pedido;
 import br.com.tech4me.pedidos.repository.PedidoRepository;
 
 @Service
+@Cacheable ("Cache-de-Cafe")
 public class PedidoServiceImpl implements PedidoService {
 @Autowired
 PedidoRepository repositorio;
@@ -39,12 +41,13 @@ public Optional<PedidoCompletoDTO> obterPorId(String id) {
     
 
     if (novoPedido.isPresent()) {
+       
         // Pego as informações do Pedido e crio uma variável idCafe para usar no feign
         Pedido pedido = novoPedido.get();
         String idCafe = pedido.getIdCafe();
 
         // Aqui o feign busca as informações com base no idCafe
-        CafeDTO cafeDTO = cliente.obterCafePorId(idCafe);
+          CafeDTO cafeDTO = cliente.obterCafePorId(idCafe);
 
         // Feita a associação do Pedido com o CafeDTO
         PedidoCompletoDTO pedidoCompletoDTO = new PedidoCompletoDTO(
